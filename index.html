@@ -9,7 +9,7 @@
     <script type="text/javascript">window.liveSettings={api_key:"27f8904425a44b4da6bc066f2aa5e46f"};</script>
     <script type="text/javascript" src="//cdn.transifex.com/live.js"></script>
     
-    <style>
+        <style>
         .test-section {
             border: 1px solid #ddd;
             margin: 20px 0;
@@ -53,6 +53,40 @@
         
         <button onclick="showHiddenInputValues()">Show Hidden Input Values</button>
         <div id="hidden-input-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 1a: Hidden Input with tx-attrs (Might be detected)</h2>
+        <p>Hidden inputs using tx-attrs to mark the value attribute:</p>
+        <input type="hidden" name="job-tx" value="Project Manager" tx-attrs="value" id="hidden-input-tx-1">
+        <input type="hidden" name="status-tx" value="Active Employee" tx-attrs="value" id="hidden-input-tx-2">
+        
+        <button onclick="showHiddenInputTxAttrsValues()">Show tx-attrs Hidden Input Values</button>
+        <div id="hidden-input-tx-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 1b: Hidden Input with tx-content="include" (Might be detected)</h2>
+        <p>Hidden inputs wrapped in tx-content="include" container:</p>
+        <div tx-content="include" style="display: none;">
+            <input type="hidden" name="role" value="Senior Developer" id="hidden-input-include-1">
+            <input type="hidden" name="level" value="Expert Level" id="hidden-input-include-2">
+        </div>
+        
+        <button onclick="showHiddenInputIncludeValues()">Show tx-content Include Values</button>
+        <div id="hidden-input-include-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 1c: Hidden Input with BOTH tx-attrs AND tx-content (Best chance)</h2>
+        <p>Hidden inputs with both tx-attrs and tx-content="include":</p>
+        <div tx-content="include">
+            <input type="hidden" name="priority" value="High Priority" tx-attrs="value" id="hidden-input-both-1">
+            <input type="hidden" name="category" value="Software Engineering" tx-attrs="value" id="hidden-input-both-2">
+        </div>
+        
+        <button onclick="showHiddenInputBothValues()">Show Combined Approach Values</button>
+        <div id="hidden-input-both-result" class="result"></div>
     </div>
 
     <div class="test-section">
@@ -150,6 +184,30 @@
             document.getElementById('hidden-input-result').innerHTML = 
                 `Hidden Input Values: "${input1}", "${input2}"<br>
                 <small>These should remain untranslated</small>`;
+        }
+
+        function showHiddenInputTxAttrsValues() {
+            const input1 = document.getElementById('hidden-input-tx-1').value;
+            const input2 = document.getElementById('hidden-input-tx-2').value;
+            document.getElementById('hidden-input-tx-result').innerHTML = 
+                `tx-attrs Hidden Input Values: "${input1}", "${input2}"<br>
+                <small>These might be translated if tx-attrs="value" works</small>`;
+        }
+
+        function showHiddenInputIncludeValues() {
+            const input1 = document.getElementById('hidden-input-include-1').value;
+            const input2 = document.getElementById('hidden-input-include-2').value;
+            document.getElementById('hidden-input-include-result').innerHTML = 
+                `tx-content="include" Values: "${input1}", "${input2}"<br>
+                <small>These might be translated if tx-content="include" forces detection</small>`;
+        }
+
+        function showHiddenInputBothValues() {
+            const input1 = document.getElementById('hidden-input-both-1').value;
+            const input2 = document.getElementById('hidden-input-both-2').value;
+            document.getElementById('hidden-input-both-result').innerHTML = 
+                `Combined Approach Values: "${input1}", "${input2}"<br>
+                <small>These have the best chance of being translated</small>`;
         }
 
         function showHiddenSpanValues() {
@@ -278,6 +336,9 @@
         <h4>What to expect:</h4>
         <ul>
             <li><strong>Test 1 (Hidden Inputs):</strong> Should NOT be detected by Live</li>
+            <li><strong>Test 1a (tx-attrs):</strong> Might be detected if tx-attrs works on hidden inputs</li>
+            <li><strong>Test 1b (tx-content="include"):</strong> Might be detected if include forces recognition</li>
+            <li><strong>Test 1c (Combined):</strong> Best chance of detection with both approaches</li>
             <li><strong>Tests 2-4 (Hidden Elements):</strong> Should be detected and translatable</li>
             <li><strong>Test 5 (Dynamic Usage):</strong> Should show translated values from hidden spans</li>
             <li><strong>Test 6 (translateNode):</strong> Should translate dynamically added content</li>
