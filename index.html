@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transifex Live Hidden Elements Test</title>
+    
+    <!-- Transifex Live -->
+
+    
+    <style>
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        
+        .hidden-translations {
+            display: none;
+        }
+        
+        .result {
+            background-color: #e8f5e8;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #4caf50;
+        }
+        
+        button {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Transifex Live Hidden Elements Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Hidden Input (Should NOT be detected)</h2>
+        <p>This hidden input should not be detected by Live:</p>
+        <input type="hidden" name="job" value="Manager" id="hidden-input">
+        <input type="hidden" name="department" value="Engineering" id="hidden-input-2">
+        
+        <button onclick="showHiddenInputValues()">Show Hidden Input Values</button>
+        <div id="hidden-input-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Hidden Spans (Should be detected)</h2>
+        <p>These hidden spans should be detected and translated by Live:</p>
+        
+        <!-- Hidden spans for translation storage -->
+        <span class="hidden-translations" data-job="manager">Manager</span>
+        <span class="hidden-translations" data-job="developer">Developer</span>
+        <span class="hidden-translations" data-job="designer">Designer</span>
+        <span class="hidden-translations" data-department="engineering">Engineering</span>
+        <span class="hidden-translations" data-department="marketing">Marketing</span>
+        
+        <button onclick="showHiddenSpanValues()">Show Hidden Span Values</button>
+        <div id="hidden-span-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Hidden Div Container (Should be detected)</h2>
+        <p>This hidden div container should have its content detected:</p>
+        
+        <div class="hidden-translations" id="translation-storage">
+            <p data-text="welcome">Welcome</p>
+            <p data-text="goodbye">Goodbye</p>
+            <p data-text="thankyou">Thank you</p>
+        </div>
+        
+        <button onclick="showHiddenDivValues()">Show Hidden Div Values</button>
+        <div id="hidden-div-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Data Attributes with tx-attrs (Should be detected)</h2>
+        <p>These elements use tx-attrs to mark data attributes for translation:</p>
+        
+        <div tx-attrs="data-status" data-status="Completed" style="display: none;" data-type="status-completed"></div>
+        <div tx-attrs="data-status" data-status="In Progress" style="display: none;" data-type="status-progress"></div>
+        <div tx-attrs="data-status" data-status="Pending" style="display: none;" data-type="status-pending"></div>
+        
+        <button onclick="showDataAttributeValues()">Show Data Attribute Values</button>
+        <div id="data-attr-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: Dynamic Content Usage</h2>
+        <p>Use translated hidden values for dynamic content:</p>
+        
+        <select id="job-selector" onchange="updateJobDisplay()">
+            <option value="">Select a job</option>
+            <option value="manager">Manager</option>
+            <option value="developer">Developer</option>
+            <option value="designer">Designer</option>
+        </select>
+        
+        <div id="dynamic-job-display" class="result">
+            Select a job to see the translated value
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 6: translateNode() in Action</h2>
+        <p>Add dynamic content and translate it:</p>
+        
+        <button onclick="addDynamicContent()">Add Dynamic Content</button>
+        <button onclick="translateDynamicContent()">Translate Added Content</button>
+        
+        <div id="dynamic-content-container"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Visible Content (For comparison)</h2>
+        <p>This visible content should definitely be detected:</p>
+        <p>Hello World</p>
+        <p>Good Morning</p>
+        <p>How are you?</p>
+    </div>
+
+    <script>
+        // Wait for Transifex Live to be ready
+        Transifex.live.onReady(function() {
+            console.log('Transifex Live is ready!');
+            
+            // Force translation of hidden elements
+            setTimeout(() => {
+                const hiddenElements = document.querySelectorAll('.hidden-translations');
+                hiddenElements.forEach(element => {
+                    Transifex.live.translateNode(element);
+                });
+            }, 1000);
+        });
+
+        function showHiddenInputValues() {
+            const input1 = document.getElementById('hidden-input').value;
+            const input2 = document.getElementById('hidden-input-2').value;
+            document.getElementById('hidden-input-result').innerHTML = 
+                `Hidden Input Values: "${input1}", "${input2}"<br>
+                <small>These should remain untranslated</small>`;
+        }
+
+        function showHiddenSpanValues() {
+            const spans = document.querySelectorAll('.hidden-translations[data-job], .hidden-translations[data-department]');
+            let result = 'Hidden Span Values:<br>';
+            
+            spans.forEach(span => {
+                const key = span.getAttribute('data-job') || span.getAttribute('data-department');
+                const value = span.textContent;
+                result += `${key}: "${value}"<br>`;
+            });
+            
+            result += '<small>These should be translated if translations exist</small>';
+            document.getElementById('hidden-span-result').innerHTML = result;
+        }
+
+        function showHiddenDivValues() {
+            const paragraphs = document.querySelectorAll('#translation-storage p');
+            let result = 'Hidden Div Values:<br>';
+            
+            paragraphs.forEach(p => {
+                const key = p.getAttribute('data-text');
+                const value = p.textContent;
+                result += `${key}: "${value}"<br>`;
+            });
+            
+            result += '<small>These should be translated if translations exist</small>';
+            document.getElementById('hidden-div-result').innerHTML = result;
+        }
+
+        function showDataAttributeValues() {
+            const elements = document.querySelectorAll('[tx-attrs="data-status"]');
+            let result = 'Data Attribute Values:<br>';
+            
+            elements.forEach(el => {
+                const type = el.getAttribute('data-type');
+                const value = el.getAttribute('data-status');
+                result += `${type}: "${value}"<br>`;
+            });
+            
+            result += '<small>These should be translated if translations exist</small>';
+            document.getElementById('data-attr-result').innerHTML = result;
+        }
+
+        function updateJobDisplay() {
+            const selector = document.getElementById('job-selector');
+            const selectedJob = selector.value;
+            
+            if (selectedJob) {
+                // Find the corresponding hidden span
+                const hiddenSpan = document.querySelector(`[data-job="${selectedJob}"]`);
+                if (hiddenSpan) {
+                    const translatedValue = hiddenSpan.textContent;
+                    document.getElementById('dynamic-job-display').innerHTML = 
+                        `Selected job: <strong>${translatedValue}</strong><br>
+                        <small>This value came from a hidden span that was translated by Live</small>`;
+                } else {
+                    document.getElementById('dynamic-job-display').innerHTML = 
+                        `Job: ${selectedJob} (no hidden translation found)`;
+                }
+            } else {
+                document.getElementById('dynamic-job-display').innerHTML = 
+                    'Select a job to see the translated value';
+            }
+        }
+
+        function addDynamicContent() {
+            const container = document.getElementById('dynamic-content-container');
+            container.innerHTML = `
+                <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                    <h3>Dynamically Added Content</h3>
+                    <p>This content was added dynamically</p>
+                    <p>Status: Loading data...</p>
+                    <p>Please wait</p>
+                </div>
+            `;
+        }
+
+        function translateDynamicContent() {
+            const container = document.getElementById('dynamic-content-container');
+            if (container.innerHTML.trim() === '') {
+                alert('Please add dynamic content first');
+                return;
+            }
+            
+            // Use translateNode to translate the dynamically added content
+            Transifex.live.translateNode(container);
+            
+            // Add a visual indicator
+            setTimeout(() => {
+                const indicator = document.createElement('p');
+                indicator.innerHTML = '<small style="color: green;">✓ translateNode() called on this content</small>';
+                container.appendChild(indicator);
+            }, 500);
+        }
+
+        // Language switching for testing
+        function switchLanguage(langCode) {
+            if (typeof Transifex !== 'undefined' && Transifex.live) {
+                Transifex.live.translateTo(langCode, true);
+            } else {
+                alert('Transifex Live not loaded yet');
+            }
+        }
+    </script>
+
+    <div style="position: fixed; top: 10px; right: 10px; background: white; padding: 10px; border: 1px solid #ccc;">
+        <strong>Quick Language Test:</strong><br>
+        <button onclick="switchLanguage('en')">English</button>
+        <button onclick="switchLanguage('es')">Spanish</button>
+        <button onclick="switchLanguage('fr')">French</button>
+        <button onclick="switchLanguage('de')">German</button>
+    </div>
+
+    <div style="margin-top: 50px; padding: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7;">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Replace "YOUR_API_KEY" at the top with your actual Transifex Live API key</li>
+            <li>Open this page in your browser</li>
+            <li>Use the Transifex Live interface to add translations for the detected strings</li>
+            <li>Test each section by clicking the buttons</li>
+            <li>Try switching languages using the buttons in the top-right corner</li>
+            <li>Check your browser's console for any Transifex Live messages</li>
+        </ol>
+        
+        <h4>What to expect:</h4>
+        <ul>
+            <li><strong>Test 1 (Hidden Inputs):</strong> Should NOT be detected by Live</li>
+            <li><strong>Tests 2-4 (Hidden Elements):</strong> Should be detected and translatable</li>
+            <li><strong>Test 5 (Dynamic Usage):</strong> Should show translated values from hidden spans</li>
+            <li><strong>Test 6 (translateNode):</strong> Should translate dynamically added content</li>
+        </ul>
+    </div>
+</body>
+</html>
